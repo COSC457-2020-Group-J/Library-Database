@@ -5,16 +5,17 @@ import java.util.Scanner;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class LibraryDatabase extends JFrame {
+public class LibraryDatabase extends JFrame implements ActionListener {
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";  
 	static final String DB_URL = "jdbc:mysql://localhost:3306/sys";
 
 	static final String USER = "root";
 	static final String PASS = "password";
-	
-	static JFrame frame;
-	static JTable table;
+
+	JButton[] buttons = new JButton[10];
 	
 	static String[] bookColumns = new String[] {"Book_number", "Book_name", "Author_number", "Pub_number", "Date_published"};
 	static String[] pubColumns = new String[] {"Pub_number", "Pub_name", "City", "Country", "Telephone"};
@@ -29,34 +30,59 @@ public class LibraryDatabase extends JFrame {
 
 	public static void main(String[] args) {
 		LibraryDatabase library = new LibraryDatabase();
-		System.out.println("Choose table to display:\n1. Book\n2. Publisher\n3. Author\n4. Borrower\n5. Person\n6. Branch\n7. Librarian\n8. Journal\n9. Article\n10. Newsletter\n0: Exit program");
-		Scanner scan = new Scanner(System.in);
-		int input = -1;
-		while (input != 0) {
-			input = scan.nextInt();
-			switch (input) {
-			case 1: library.createUI(frame, table, bookColumns, "book"); break;
-			case 2: library.createUI(frame, table, pubColumns, "publisher"); break;
-			case 3: library.createUI(frame, table, authorColumns, "author"); break;
-			case 4: library.createUI(frame, table, borrowerColumns, "borrower"); break;
-			case 5: library.createUI(frame, table, personColumns, "person"); break;
-			case 6: library.createUI(frame, table, branchColumns, "branch"); break;
-			case 7: library.createUI(frame, table, librarianColumns, "librarian"); break;
-			case 8: library.createUI(frame, table, journalColumns, "journal"); break;
-			case 9: library.createUI(frame, table, articleColumns, "article"); break;
-			case 10: library.createUI(frame, table, newsletterColumns, "newsletter"); break;
-			default: break;
+		library.createTableSelectionUI();
+	}
+	
+	public void createTableSelectionUI() {
+		JFrame frame = new JFrame("Library Database Tables");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLayout(new FlowLayout());
+		DefaultTableModel model = new DefaultTableModel();
+		
+		String[] buttonNames = new String[] {"Book table", "Publisher table", "Author table",
+				"Borrower table", "Person table", "Branch table", "Librarian table",
+				"Journal table", "Article table", "Newsletter table"};
+		
+		for (int i = 0; i < 10; i++) {
+			buttons[i] = new JButton(buttonNames[i]);
+			buttons[i].setName(Integer.toString(i));
+			buttons[i].addActionListener(this);
+			frame.add(buttons[i]);
+		}
+		frame.setVisible(true);
+		frame.setSize(720, 120);
+	}
+	
+	@Override public void actionPerformed(ActionEvent ae) {
+		int clickedBtn = -1;
+		for (int i = 0; i < 10; i++) {
+			if (ae.getSource() == buttons[i]) {
+				clickedBtn = i;
+				break;
 			}
+		}
+		switch (clickedBtn) {
+		case 0: createTableUI(bookColumns, "book"); break;
+		case 1: createTableUI(pubColumns, "publisher"); break;
+		case 2: createTableUI(authorColumns, "author"); break;
+		case 3: createTableUI(borrowerColumns, "borrower"); break;
+		case 4: createTableUI(personColumns, "person"); break;
+		case 5: createTableUI(branchColumns, "branch"); break;
+		case 6: createTableUI(librarianColumns, "librarian"); break;
+		case 7: createTableUI(journalColumns, "journal"); break;
+		case 8: createTableUI(articleColumns, "article"); break;
+		case 9: createTableUI(newsletterColumns, "newsletter"); break;
+		default: break;
 		}
 	}
 	
-	public void createUI(JFrame frame, JTable table, String[] columns, String tableName) {
-		frame = new JFrame(tableName.substring(0, 1).toUpperCase() + tableName.substring(1).toLowerCase() + " table");
+	private void createTableUI(String[] columns, String tableName) {
+		JFrame frame = new JFrame(tableName.substring(0, 1).toUpperCase() + tableName.substring(1).toLowerCase() + " table");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		DefaultTableModel model = new DefaultTableModel();
 		model.setColumnIdentifiers(columns);
-		table = new JTable();
+		JTable table = new JTable();
 		table.setModel(model);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		table.setFillsViewportHeight(true);
@@ -67,9 +93,8 @@ public class LibraryDatabase extends JFrame {
 		try {
 			Class.forName(JDBC_DRIVER);
 			Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
-			Statement stmt = null;
 			String sql = "select * from " + tableName.toUpperCase();
-			stmt = conn.createStatement();
+			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				for (int i = 0; i < columns.length; i++) {
