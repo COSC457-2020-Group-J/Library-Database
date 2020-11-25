@@ -1,81 +1,64 @@
 package libraryDatabase;
 
 import java.sql.*;
-import java.util.Scanner;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
-public class LibraryDatabase extends JFrame implements ActionListener {
+public class LibraryDatabase {
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";  
 	static final String DB_URL = "jdbc:mysql://localhost:3306/sys";
 
 	static final String USER = "root";
 	static final String PASS = "password";
 
-	JButton[] buttons = new JButton[10];
-	
-	static String[] bookColumns = new String[] {"Book_number", "Book_name", "Author_number", "Pub_number", "Date_published"};
-	static String[] pubColumns = new String[] {"Pub_number", "Pub_name", "City", "Country", "Telephone"};
-	static String[] authorColumns = new String[] {"Author_number", "Person_number"};
-	static String[] borrowerColumns = new String[] {"Borrow_number", "Person_number", "Book_number", "Date_borrowed", "Date_due"};
-	static String[] personColumns = new String[] {"Person_number", "First_name", "Last_name", "City", "Country"};
-	static String[] branchColumns = new String[] {"Branch_number", "City", "Country", "Telephone"};
-	static String[] librarianColumns = new String[] {"Lib_number", "Person_number", "Branch_number", "Wage"};
-	static String[] journalColumns = new String[] {"Journal_number", "Author_number", "News_number", "Journal_name"};
-	static String[] articleColumns = new String[] {"Article_number", "Author_number", "News_number", "Article_name"};
-	static String[] newsletterColumns = new String[] {"News_number", "Date_published"};
+	static final String[][] columns = new String[][] {
+		{"Book_number", "Book_name", "Author_number", "Pub_number", "Date_published"},
+		{"Pub_number", "Pub_name", "City", "Country", "Telephone"},
+		{"Author_number", "Person_number"},
+		{"Borrow_number", "Person_number", "Book_number", "Date_borrowed", "Date_due"},
+		{"Person_number", "First_name", "Last_name", "City", "Country"},
+		{"Branch_number", "City", "Country", "Telephone"},
+		{"Lib_number", "Person_number", "Branch_number", "Wage"},
+		{"Journal_number", "Author_number", "News_number", "Journal_name"},
+		{"Article_number", "Author_number", "News_number", "Article_name"},
+		{"News_number", "Date_published"}
+	};
+
+	static final String[] tableNames = new String[] {"Book", "Publisher", "Author",
+			"Borrower", "Person", "Branch", "Librarian",
+			"Journal", "Article", "Newsletter"};
+
+	JButton[] tableBtns = new JButton[tableNames.length];
 
 	public static void main(String[] args) {
 		LibraryDatabase library = new LibraryDatabase();
 		library.createTableSelectionUI();
 	}
-	
+
+	public void createLoginUI() {
+		JFrame frame = new JFrame("Library Database Login");
+		JPanel panel = new JPanel();
+		JTextField userField = new JTextField();
+		JPasswordField passField = new JPasswordField();
+		JButton loginBtn = new JButton();
+	}
+
 	public void createTableSelectionUI() {
 		JFrame frame = new JFrame("Library Database Tables");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new FlowLayout());
-		DefaultTableModel model = new DefaultTableModel();
-		
-		String[] buttonNames = new String[] {"Book table", "Publisher table", "Author table",
-				"Borrower table", "Person table", "Branch table", "Librarian table",
-				"Journal table", "Article table", "Newsletter table"};
-		
-		for (int i = 0; i < 10; i++) {
-			buttons[i] = new JButton(buttonNames[i]);
-			buttons[i].setName(Integer.toString(i));
-			buttons[i].addActionListener(this);
-			frame.add(buttons[i]);
+		for (int i = 0; i < tableNames.length; i++) {
+			tableBtns[i] = new JButton(tableNames[i].substring(0, 1).toUpperCase() + tableNames[i].substring(1).toLowerCase() + " table");
+			final int j = i;
+			tableBtns[i].addActionListener(ae -> createTableUI(columns[j], tableNames[j]));
+			frame.add(tableBtns[i]);
 		}
 		frame.setVisible(true);
 		frame.setSize(720, 120);
 	}
-	
-	@Override public void actionPerformed(ActionEvent ae) {
-		int clickedBtn = -1;
-		for (int i = 0; i < 10; i++) {
-			if (ae.getSource() == buttons[i]) {
-				clickedBtn = i;
-				break;
-			}
-		}
-		switch (clickedBtn) {
-		case 0: createTableUI(bookColumns, "book"); break;
-		case 1: createTableUI(pubColumns, "publisher"); break;
-		case 2: createTableUI(authorColumns, "author"); break;
-		case 3: createTableUI(borrowerColumns, "borrower"); break;
-		case 4: createTableUI(personColumns, "person"); break;
-		case 5: createTableUI(branchColumns, "branch"); break;
-		case 6: createTableUI(librarianColumns, "librarian"); break;
-		case 7: createTableUI(journalColumns, "journal"); break;
-		case 8: createTableUI(articleColumns, "article"); break;
-		case 9: createTableUI(newsletterColumns, "newsletter"); break;
-		default: break;
-		}
-	}
-	
+
 	private void createTableUI(String[] columns, String tableName) {
 		JFrame frame = new JFrame(tableName.substring(0, 1).toUpperCase() + tableName.substring(1).toLowerCase() + " table");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -106,7 +89,7 @@ public class LibraryDatabase extends JFrame implements ActionListener {
 			stmt.close();
 			conn.close();
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null,  e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		frame.add(scroll);
 		frame.setVisible(true);
