@@ -24,7 +24,7 @@ public class LibraryDatabase {
 		{"Article_number", "Author_number", "News_number", "Article_name"},
 		{"News_number", "Date_published"}
 	};
-	
+
 	static final Boolean[][] boolIsInt = new Boolean[][]{
 		{true, false, true, true, false},
 		{true, false, false, false, true},
@@ -109,26 +109,17 @@ public class LibraryDatabase {
 		for (int i = 0; i < tableNames.length; i++) {
 			tableBtns[i] = new JButton(tableNames[i].substring(0, 1).toUpperCase() + tableNames[i].substring(1).toLowerCase() + " table");
 			final int j = i;
-			tableBtns[i].addActionListener(ae -> createTableUI(allColumns[j], tableNames[j], boolIsInt[j]));
+			tableBtns[i].addActionListener(ae -> createTableUI(allColumns[j], tableNames[j], boolIsInt[j], j));
 			frame.add(tableBtns[i]);
 		}
 		frame.setVisible(true);
 		frame.setSize(720, 120);
 	}
 
-	private void createTableUI(String[] columns, String tableName, Boolean[] isInt) {
-		JFrame frame = new JFrame(tableName.substring(0, 1).toUpperCase() + tableName.substring(1).toLowerCase() + " table");
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frame.setLayout(new BorderLayout());
-		DefaultTableModel model = new DefaultTableModel();
-		model.setColumnIdentifiers(columns);
-		JTable table = new JTable();
-		table.setModel(model);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		table.setFillsViewportHeight(true);
-		JScrollPane scroll = new JScrollPane(table);
-		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	static DefaultTableModel[] models = new DefaultTableModel[tableNames.length];
+
+	private void retrieveData(String[] columns, String tableName, int tableNum) {
+		models[tableNum].setRowCount(0);
 		String[] values = new String[columns.length];
 		try {
 			Class.forName(JDBC_DRIVER);
@@ -140,7 +131,7 @@ public class LibraryDatabase {
 				for (int i = 0; i < columns.length; i++) {
 					values[i] = rs.getString(columns[i]);
 				}
-				model.addRow(values);
+				models[tableNum].addRow(values);
 			}
 			rs.close();
 			stmt.close();
@@ -148,7 +139,24 @@ public class LibraryDatabase {
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
+	}
+
+	private void createTableUI(String[] columns, String tableName, Boolean[] isInt, int tableNum) {
+		JFrame frame = new JFrame(tableName.substring(0, 1).toUpperCase() + tableName.substring(1).toLowerCase() + " table");
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setLayout(new BorderLayout());
+		models[tableNum] = new DefaultTableModel();
+		models[tableNum].setColumnIdentifiers(columns);
+		JTable table = new JTable();
+		table.setModel(models[tableNum]);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		table.setFillsViewportHeight(true);
+		JScrollPane scroll = new JScrollPane(table);
+		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		frame.add(scroll, BorderLayout.CENTER);
+
+		retrieveData(columns, tableName, tableNum);
 
 		JLabel[] columnLabels = new JLabel[columns.length];
 		JTextField[] columnFields = new JTextField[columns.length];
@@ -187,8 +195,9 @@ public class LibraryDatabase {
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
+			retrieveData(columns, tableName, tableNum);
 		});
-		
+
 		JButton update = new JButton("Update");
 		update.addActionListener(ae -> {
 			String allValues = "";
@@ -210,8 +219,9 @@ public class LibraryDatabase {
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
+			retrieveData(columns, tableName, tableNum);
 		});
-		
+
 		JButton delete = new JButton("Delete");
 		delete.addActionListener(ae -> {
 			try {
@@ -225,6 +235,7 @@ public class LibraryDatabase {
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
+			retrieveData(columns, tableName, tableNum);
 		});
 
 		columnPanel.add(add);
