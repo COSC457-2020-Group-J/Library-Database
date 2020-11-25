@@ -12,7 +12,7 @@ public class LibraryDatabase {
 	static final String USER = "root";
 	static final String PASS = "password";
 
-	static final String[][] columns = new String[][] {
+	static final String[][] allColumns = new String[][] {
 		{"Book_number", "Book_name", "Author_number", "Pub_number", "Date_published"},
 		{"Pub_number", "Pub_name", "City", "Country", "Telephone"},
 		{"Author_number", "Person_number"},
@@ -24,6 +24,19 @@ public class LibraryDatabase {
 		{"Article_number", "Author_number", "News_number", "Article_name"},
 		{"News_number", "Date_published"}
 	};
+	
+	static final Boolean[][] boolIsInt = new Boolean[][]{
+		{true, false, true, true, false},
+		{true, false, false, false, true},
+		{true, true},
+		{true, true, true, false, false},
+		{true, false, false, false, false},
+		{true, false, false, true},
+		{true, true, true, true},
+		{true, true, true, false},
+		{true, true, true, false},
+		{true, false}
+	};
 
 	static final String[] tableNames = new String[] {"Book", "Publisher", "Author",
 			"Borrower", "Person", "Branch", "Librarian",
@@ -34,7 +47,7 @@ public class LibraryDatabase {
 	public static void main(String[] args) {
 		LibraryDatabase library = new LibraryDatabase();
 		library.createLoginUI();
-		//library.createTableSelectionUI();
+		//library.createTableUI(allColumns[0], tableNames[0], boolIsInt[0]);
 	}
 
 	public void createLoginUI() {
@@ -49,17 +62,17 @@ public class LibraryDatabase {
 		panel.add(loginLabel);
 		JLabel userLabel = new JLabel("Username:");
 		userLabel.setBounds(40, 60, 240, 30);
-		panel.add(userLabel, BorderLayout.LINE_START);
+		panel.add(userLabel);
 		JTextField userField = new JTextField();
 		userField.setBounds(120, 60, 240, 30);
-		panel.add(userField, BorderLayout.LINE_START);
+		panel.add(userField);
 		userField.setColumns(10);
 		JLabel passLabel = new JLabel("Password:");
 		passLabel.setBounds(40, 100, 240, 30);
-		panel.add(passLabel, BorderLayout.LINE_END);
+		panel.add(passLabel);
 		JPasswordField passField = new JPasswordField();
 		passField.setBounds(120, 100, 240, 30);
-		panel.add(passField, BorderLayout.LINE_END);
+		panel.add(passField);
 		JButton loginBtn = new JButton("Login");
 		loginBtn.setBounds(120, 140, 240, 30);
 		loginBtn.addActionListener(ae -> {
@@ -84,26 +97,26 @@ public class LibraryDatabase {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		});
-		panel.add(loginBtn, BorderLayout.PAGE_END);
+		panel.add(loginBtn);
 		frame.setVisible(true);
 		frame.setSize(480, 240);
 	}
 
-	public void createTableSelectionUI() {
+	private void createTableSelectionUI() {
 		JFrame frame = new JFrame("Library Database Tables");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setLayout(new FlowLayout());
 		for (int i = 0; i < tableNames.length; i++) {
 			tableBtns[i] = new JButton(tableNames[i].substring(0, 1).toUpperCase() + tableNames[i].substring(1).toLowerCase() + " table");
 			final int j = i;
-			tableBtns[i].addActionListener(ae -> createTableUI(columns[j], tableNames[j]));
+			tableBtns[i].addActionListener(ae -> createTableUI(allColumns[j], tableNames[j], boolIsInt[j]));
 			frame.add(tableBtns[i]);
 		}
 		frame.setVisible(true);
 		frame.setSize(720, 120);
 	}
 
-	private void createTableUI(String[] columns, String tableName) {
+	private void createTableUI(String[] columns, String tableName, Boolean[] isInt) {
 		JFrame frame = new JFrame(tableName.substring(0, 1).toUpperCase() + tableName.substring(1).toLowerCase() + " table");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
@@ -135,8 +148,54 @@ public class LibraryDatabase {
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
-		frame.add(scroll);
+		frame.add(scroll, BorderLayout.CENTER);
+
+		JLabel[] columnLabels = new JLabel[columns.length];
+		JTextField[] columnFields = new JTextField[columns.length];
+		JPanel columnPanel = new JPanel();
+		columnPanel.setLayout(new FlowLayout());
+		columnPanel.setPreferredSize(new Dimension(120, 480));
+		for (int i = 0; i < columns.length; i++) {
+			columnLabels[i] = new JLabel(columns[i]);
+			columnFields[i] = new JTextField();
+			columnFields[i].setColumns(10);
+			columnPanel.add(columnLabels[i]);
+			columnPanel.add(columnFields[i]);
+		}
+
+		JButton add = new JButton("Add");
+		add.addActionListener(ae -> {
+			String concatColumns = "";
+			String allValues = "";
+			for (int i = 1; i < columns.length; i++) {
+				concatColumns += columns[i] + ", ";
+				if (isInt[i])
+					allValues += columnFields[i].getText() + ", ";
+				else
+					allValues += "\'" + columnFields[i].getText() + "\', ";
+			}
+			concatColumns = concatColumns.substring(0, concatColumns.length() - 2);
+			allValues = allValues.substring(0, allValues.length() - 2);
+			try {
+				Class.forName(JDBC_DRIVER);
+				Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+				String sql = "INSERT INTO " + tableName.toUpperCase() + "(" + concatColumns + ") VALUES(" + allValues + ")";
+				Statement stmt = conn.createStatement();
+				stmt.executeUpdate(sql);
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+		JButton update = new JButton("Update");
+		JButton delete = new JButton("Delete");
+
+		columnPanel.add(add);
+		columnPanel.add(update);
+		columnPanel.add(delete);
+
+		frame.add(columnPanel, BorderLayout.LINE_START);
+		frame.pack();
 		frame.setVisible(true);
-		frame.setSize(720, 360);
+		frame.setSize(720, 480);
 	}
 }
