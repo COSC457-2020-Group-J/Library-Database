@@ -211,7 +211,21 @@ public class LibraryDatabase {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		});
+		
 		JButton delete = new JButton("Delete");
+		delete.addActionListener(ae -> {
+			try {
+				Class.forName(JDBC_DRIVER);
+				Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+				String sql = "DELETE FROM " + tableName.toUpperCase() + " WHERE " + columns[0] + " = " + columnFields[0].getText();
+				Statement stmt = conn.createStatement();
+				stmt.executeUpdate(sql);
+				stmt.close();
+				conn.close();
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
 
 		columnPanel.add(add);
 		columnPanel.add(update);
