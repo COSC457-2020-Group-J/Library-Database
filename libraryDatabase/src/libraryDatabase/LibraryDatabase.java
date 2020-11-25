@@ -182,11 +182,35 @@ public class LibraryDatabase {
 				String sql = "INSERT INTO " + tableName.toUpperCase() + "(" + concatColumns + ") VALUES(" + allValues + ")";
 				Statement stmt = conn.createStatement();
 				stmt.executeUpdate(sql);
+				stmt.close();
+				conn.close();
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		});
+		
 		JButton update = new JButton("Update");
+		update.addActionListener(ae -> {
+			String allValues = "";
+			for (int i = 1; i < columns.length; i++) {
+				if (isInt[i])
+					allValues += columns[i] + " = " + columnFields[i].getText() + ", ";
+				else
+					allValues += columns[i] + " = \'" + columnFields[i].getText() + "\', ";
+			}
+			allValues = allValues.substring(0, allValues.length() - 2);
+			try {
+				Class.forName(JDBC_DRIVER);
+				Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+				String sql = "UPDATE " + tableName.toUpperCase() + " SET " + allValues + " WHERE " + columns[0] + " = " + columnFields[0].getText();
+				Statement stmt = conn.createStatement();
+				stmt.executeUpdate(sql);
+				stmt.close();
+				conn.close();
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
 		JButton delete = new JButton("Delete");
 
 		columnPanel.add(add);
