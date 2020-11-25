@@ -4,7 +4,6 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class LibraryDatabase {
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";  
@@ -34,20 +33,65 @@ public class LibraryDatabase {
 
 	public static void main(String[] args) {
 		LibraryDatabase library = new LibraryDatabase();
-		library.createTableSelectionUI();
+		library.createLoginUI();
+		//library.createTableSelectionUI();
 	}
 
 	public void createLoginUI() {
 		JFrame frame = new JFrame("Library Database Login");
 		JPanel panel = new JPanel();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setResizable(false);
+		frame.setContentPane(panel);
+		frame.setLayout(null);
+		JLabel loginLabel = new JLabel("Library Database Login");
+		loginLabel.setBounds(170, 20, 180, 30);
+		panel.add(loginLabel);
+		JLabel userLabel = new JLabel("Username:");
+		userLabel.setBounds(40, 60, 240, 30);
+		panel.add(userLabel, BorderLayout.LINE_START);
 		JTextField userField = new JTextField();
+		userField.setBounds(120, 60, 240, 30);
+		panel.add(userField, BorderLayout.LINE_START);
+		userField.setColumns(10);
+		JLabel passLabel = new JLabel("Password:");
+		passLabel.setBounds(40, 100, 240, 30);
+		panel.add(passLabel, BorderLayout.LINE_END);
 		JPasswordField passField = new JPasswordField();
-		JButton loginBtn = new JButton();
+		passField.setBounds(120, 100, 240, 30);
+		panel.add(passField, BorderLayout.LINE_END);
+		JButton loginBtn = new JButton("Login");
+		loginBtn.setBounds(120, 140, 240, 30);
+		loginBtn.addActionListener(ae -> {
+			String username = userField.getText();
+			@SuppressWarnings("deprecation")
+			String password = passField.getText();
+			try {
+				Class.forName(JDBC_DRIVER);
+				Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+				String sql = "select Username, Password from USER where Username=? and Password=?";
+				PreparedStatement stmt = (PreparedStatement) conn.prepareStatement(sql);
+				stmt.setString(1, username);
+				stmt.setString(2, password);
+				ResultSet rs = stmt.executeQuery();
+				if (rs.next()) {
+					rs.close();
+					stmt.close();
+					conn.close();
+					createTableSelectionUI();
+				}
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+		panel.add(loginBtn, BorderLayout.PAGE_END);
+		frame.setVisible(true);
+		frame.setSize(480, 240);
 	}
 
 	public void createTableSelectionUI() {
 		JFrame frame = new JFrame("Library Database Tables");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setLayout(new FlowLayout());
 		for (int i = 0; i < tableNames.length; i++) {
 			tableBtns[i] = new JButton(tableNames[i].substring(0, 1).toUpperCase() + tableNames[i].substring(1).toLowerCase() + " table");

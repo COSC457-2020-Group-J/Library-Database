@@ -30,4 +30,7 @@ VALUES(1, 1, 'My First Article');
 INSERT INTO NEWSLETTER(Date_published)
 VALUES('2020-4-20');
 
+INSERT INTO USER(Username, Password)
+VALUES('admin', 'password');
+
 SET FOREIGN_KEY_CHECKS = 1;
