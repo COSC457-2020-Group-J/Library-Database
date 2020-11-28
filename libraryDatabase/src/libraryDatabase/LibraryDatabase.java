@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class LibraryDatabase {
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";  
-	static final String DB_URL = "jdbc:mysql://localhost:3306/sys";
+	static final String DB_URL = "jdbc:mysql://localhost:3306/library";
 
 	static final String USER = "root";
 	static final String PASS = "password";
