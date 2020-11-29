@@ -6,6 +6,17 @@ import javax.swing.table.*;
 import java.awt.*;
 
 public class LibraryDatabase {
+	/*
+	 * Create a new connection in MySQL workbench with these settings
+	 * to create the database necessary to run the program:
+	 * 
+	 * Hostname: localhost
+	 * Port: 3306
+	 * Username: root
+	 * Password: password
+	 * 
+	 * Also create a new schema within it named "library"
+	 */
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";  
 	static final String DB_URL = "jdbc:mysql://localhost:3306/library";
 
